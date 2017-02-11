@@ -30,6 +30,12 @@ module('search', {
     }]).forEach(function (doc) { idx.addDoc(doc); });
 
     this.idx = idx;
+
+    this.testQueryReturnAllResults = function(query) {
+      var results = this.idx.search(query);
+
+      equal(results.length, 5);
+    };
   }
 });
 
@@ -76,4 +82,20 @@ test('search skips on 0 boost fields', function () {
 
   equal(results.length, 1);
   equal(results[0].ref, 'b');
+});
+
+test('empty search returns all results', function() {
+  this.testQueryReturnAllResults('');
+});
+
+test('null search returns all results', function() {
+  this.testQueryReturnAllResults(null);
+});
+
+test('undefined search returns all results', function() {
+  this.testQueryReturnAllResults(undefined);
+});
+
+test('no search returns all results', function() {
+  this.testQueryReturnAllResults();
 });
