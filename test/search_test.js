@@ -30,6 +30,12 @@ module('search', {
     }]).forEach(function (doc) { idx.addDoc(doc); });
 
     this.idx = idx;
+
+    this.testMultiSearchReturnsNoResults = function(queries) {
+      var results = this.idx.multiSearch(queries);
+
+      equal(results.length, 0);
+    };
   }
 });
 
@@ -76,4 +82,76 @@ test('search skips on 0 boost fields', function () {
 
   equal(results.length, 1);
   equal(results[0].ref, 'b');
+});
+
+test('two queries matching same results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'plant'
+    },
+    {
+      query: 'professor'
+    }
+  ]);
+
+  equal(results.length, 2);
+  equal(results[0].ref, 'b');
+  equal(results[1].ref, 'c');
+});
+
+test('second query matching some of first query results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'green'
+    },
+    {
+      query: 'mustard'
+    }
+  ]);
+
+  equal(results.length, 1);
+  equal(results[0].ref, 'a');
+});
+
+test('first query matching some of second query results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'mustard'
+    },
+    {
+      query: 'green'
+    }
+  ]);
+
+  equal(results.length, 1);
+  equal(results[0].ref, 'a');
+});
+
+test('two queries matching different results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'kills'
+    },
+    {
+      query: 'scarlett'
+    }
+  ]);
+
+  equal(results.length, 0);
+});
+
+test('empty queries array', function() {
+  this.testMultiSearchReturnsNoResults([]);
+});
+
+test('null queries array', function() {
+  this.testMultiSearchReturnsNoResults(null);
+});
+
+test('undefined queries array', function() {
+  this.testMultiSearchReturnsNoResults(undefined);
+});
+
+test('no queries array', function() {
+  this.testMultiSearchReturnsNoResults();
 });
