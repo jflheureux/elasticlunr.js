@@ -31,8 +31,14 @@ module('search', {
 
     this.idx = idx;
 
-    this.testQueryReturnAllResults = function(query) {
+    this.testSearchReturnAllResults = function(query) {
       var results = this.idx.search(query);
+
+      equal(results.length, 5);
+    };
+
+    this.testMultiSearchReturnAllResults = function(queries) {
+      var results = this.idx.multiSearch(queries);
 
       equal(results.length, 5);
     };
@@ -85,17 +91,89 @@ test('search skips on 0 boost fields', function () {
 });
 
 test('empty search returns all results', function() {
-  this.testQueryReturnAllResults('');
+  this.testSearchReturnAllResults('');
 });
 
 test('null search returns all results', function() {
-  this.testQueryReturnAllResults(null);
+  this.testSearchReturnAllResults(null);
 });
 
 test('undefined search returns all results', function() {
-  this.testQueryReturnAllResults(undefined);
+  this.testSearchReturnAllResults(undefined);
 });
 
 test('no search returns all results', function() {
-  this.testQueryReturnAllResults();
+  this.testSearchReturnAllResults();
+});
+
+test('two queries matching same results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'plant'
+    },
+    {
+      query: 'professor'
+    }
+  ]);
+
+  equal(results.length, 2);
+  equal(results[0].ref, 'b');
+  equal(results[1].ref, 'c');
+});
+
+test('second query matching some of first query results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'green'
+    },
+    {
+      query: 'mustard'
+    }
+  ]);
+
+  equal(results.length, 1);
+  equal(results[0].ref, 'a');
+});
+
+test('first query matching some of second query results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'mustard'
+    },
+    {
+      query: 'green'
+    }
+  ]);
+
+  equal(results.length, 1);
+  equal(results[0].ref, 'a');
+});
+
+test('two queries matching different results', function() {
+  var results = this.idx.multiSearch([
+    {
+      query: 'kills'
+    },
+    {
+      query: 'scarlett'
+    }
+  ]);
+
+  equal(results.length, 0);
+});
+
+test('empty queries array', function() {
+  this.testMultiSearchReturnAllResults([]);
+});
+
+test('null queries array', function() {
+  this.testMultiSearchReturnAllResults(null);
+});
+
+test('undefined queries array', function() {
+  this.testMultiSearchReturnAllResults(undefined);
+});
+
+test('no queries array', function() {
+  this.testMultiSearchReturnAllResults();
 });
